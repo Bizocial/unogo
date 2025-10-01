@@ -1,6 +1,8 @@
 // app/api/webhooks/whatsapp/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { openai, SYSTEM_PROMPT } from "@/lib/openai";
+
 
 // GET: verificación de webhook (hub.challenge)
 export async function GET(req: NextRequest) {
@@ -35,28 +37,48 @@ export async function POST(req: NextRequest) {
   const text = msg?.text?.body ?? '';
 
   if (from && text) {
-   // const url = `https://graph.facebook.com/v20.0/${process.env.META_PHONE_NUMBER_ID}/messages`;
-      const url = `${process.env.META_BASE_URL}/${process.env.META_GRAPH_API_VERSION}/${process.env.META_PHONE_NUMBER_ID}/messages`;
-
+    // 1) Llamar a OpenAI con el mensaje del usuario
+    let aiText = "Perdona, tuve un problema al pensar mi respuesta.";
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini", // ligero y rápido para WhatsApp
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: text }
+        ],
+        // Opcional: temperatura baja para respuestas más estables
+        temperature: 0.4,
+      });
+      aiText = completion.choices[0]?.message?.content?.trim() || aiText;
+  
+      // recorta por si el modelo se extiende
+      if (aiText.length > 900) aiText = aiText.slice(0, 900) + "…";
+    } catch (e) {
+      console.error("OpenAI error:", e);
+      aiText = "Ups, no pude responder ahora. ¿Puedes repetir en breve?";
+    }
+  
+    // 2) Enviar la respuesta de OpenAI por WhatsApp
+    const url = `${process.env.META_BASE_URL ?? "https://graph.facebook.com"}/${process.env.META_GRAPH_API_VERSION}/${process.env.META_PHONE_NUMBER_ID}/messages`;
     const payload = {
-      messaging_product: 'whatsapp',
+      messaging_product: "whatsapp",
       to: from,
-      type: 'text',
-      text: { body: `Recibido: ${text}` }
+      type: "text",
+      text: { body: aiText },
     };
     const res = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.META_WHATSAPP_TOKEN}`,
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
     if (!res.ok) {
       const err = await res.text();
-      console.error('WhatsApp send error:', res.status, err);
+      console.error("WhatsApp send error:", res.status, err);
     }
   }
-
+  
   return NextResponse.json({ ok: true });
 }
