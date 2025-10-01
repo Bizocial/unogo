@@ -35,7 +35,9 @@ export async function POST(req: NextRequest) {
   const text = msg?.text?.body ?? '';
 
   if (from && text) {
-    const url = `https://graph.facebook.com/v20.0/${process.env.META_PHONE_NUMBER_ID}/messages`;
+   // const url = `https://graph.facebook.com/v20.0/${process.env.META_PHONE_NUMBER_ID}/messages`;
+      const url = `${process.env.META_BASE_URL}/${process.env.META_GRAPH_API_VERSION}/${process.env.META_PHONE_NUMBER_ID}/messages`;
+
     const payload = {
       messaging_product: 'whatsapp',
       to: from,
