@@ -70,12 +70,12 @@ export async function POST(req: NextRequest) {
     }); // doc: endpoint messages -> mark as read
 
     // 2) enviar acuse de recibo inmediato (simula progreso)
-    await waFetch(`${phoneId}/messages`, {
-      messaging_product: 'whatsapp',
-      to: from,
-      type: 'text',
-      text: { body: 'Recibido, te responderé en un instante...' },
-    });
+   // await waFetch(`${phoneId}/messages`, {
+   //   messaging_product: 'whatsapp',
+   //   to: from,
+   //   type: 'text',
+   //   text: { body: 'Recibido, te respondo en breve...' },
+   // });
 
     // 3) Llamar a OpenAI y preparar respuesta final
     let aiText = 'Perdona, tuve un problema al pensar mi respuesta.';
