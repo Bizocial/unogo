@@ -1,0 +1,1 @@
+{ "name": "@unogo/llm-openai", "version": "0.1.0", "type": "module", "main": "src/index.ts", "dependencies": { "@unogo/llm": "0.1.0", "openai": "^4.60.0" } }

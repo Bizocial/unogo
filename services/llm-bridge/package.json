@@ -1,0 +1,1 @@
+{ "name": "@unogo/sv-llm-bridge", "version": "0.1.0", "type": "module", "main": "src/index.ts", "dependencies": { "@unogo/events":"0.1.0", "@unogo/llm":"0.1.0", "@unogo/prompts":"0.1.0", "@unogo/llm-openai":"0.1.0", "@unogo/shared":"0.1.0" } }
