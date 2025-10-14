@@ -4,7 +4,7 @@ import { add } from '@unogo/events';
 import { WhatsAppInbound } from '@unogo/channels-whatsapp';
 
 export async function POST(req: Request) {
-  const ok = await WhatsAppInbound.verifySignature(req);
+  const ok = await WhatsAppInbound.verifySignature(req.clone());
   if (!ok) return new Response('bad signature', { status: 401 });
 
   const message = await WhatsAppInbound.parseInbound(req);
