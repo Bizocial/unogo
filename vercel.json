@@ -1,6 +1,5 @@
 {
-  "version": 2,
-  "framework": "nextjs",
+  "framework": null,
   "installCommand": "corepack enable && corepack prepare pnpm@9.12.0 --activate && pnpm install --frozen-lockfile",
   "buildCommand": "pnpm vercel-build",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD ."
