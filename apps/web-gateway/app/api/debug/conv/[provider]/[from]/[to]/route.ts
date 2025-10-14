@@ -2,8 +2,8 @@ import { listTopics, getActive, getContext } from '@unogo/topics';
 
 export const runtime = 'nodejs';
 
-export async function GET(_req: Request, { params }: { params: { provider: string; from: string; to: string } }) {
-  const { provider, from, to } = params;
+export async function GET(_req: Request, context: { params: Record<string, string> }) {
+  const { provider, from, to } = context.params || {};
   const convId = [provider, from, to].join(':');
 
   const topics = await listTopics(convId);
