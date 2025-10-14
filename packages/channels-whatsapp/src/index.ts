@@ -4,6 +4,7 @@ import type {
   ChatMessage
 } from '@unogo/channels';
 import crypto from 'node:crypto';
+import { logger } from '@unogo/shared';
 
 function safeEqual(a: string, b: string) {
   const ab = Buffer.from(a);
@@ -39,10 +40,19 @@ export const WhatsAppInbound: ChannelInboundAdapter & {
     const msg = body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
 
     const id = msg?.id ?? crypto.randomUUID();
-    const from = msg?.from ?? '';
-    const to = process.env.WHATSAPP_PHONE_ID ?? '';
+    const fromRaw = msg?.from ?? '';
+    const toRaw = process.env.WHATSAPP_PHONE_ID ?? '';
+
+    const digitsOnly = (s: string) => String(s || '').replace(/\D+/g, '');
+    const addPlus = (s: string) => (s ? ('+' + s) : s);
+    const from = addPlus(digitsOnly(fromRaw));
+    const to = addPlus(digitsOnly(toRaw));
     const type = msg?.type ?? 'text';
     const text = type === 'text' ? (msg?.text?.body ?? '') : undefined;
+
+    // Safe debug (masked PII)
+    const mask = (s: string) => (s ? s.replace(/.(?=.{2})/g, '*') : s);
+    logger.info({ provider: 'whatsapp', from: mask(from), to: mask(to) }, 'WA normalize from/to');
 
     const chat: ChatMessage = {
       id,
