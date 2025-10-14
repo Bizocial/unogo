@@ -8,7 +8,8 @@
     "dev:llm": "tsx services/llm-bridge/src/index.ts",
     "dev:notif": "tsx services/notifications/src/index.ts",
     "dev": "run-p dev:web dev:orch dev:llm dev:notif",
-    "typecheck": "tsc -p tsconfig.base.json --noEmit"
+    "typecheck": "tsc -p tsconfig.base.json --noEmit",
+    "vercel-build": "pnpm --filter @unogo/web-gateway build"
   },
   "devDependencies": {
     "tsx": "^4.16.0",
@@ -18,5 +19,6 @@
     "ioredis": "^5.4.1",
     "pino": "^9.0.0",
     "typescript": "^5.6.3"
-  }
+  },
+  "packageManager": "pnpm@9.12.3"
 }
