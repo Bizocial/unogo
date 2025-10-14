@@ -4,10 +4,11 @@
   "workspaces": ["apps/*", "services/*", "packages/*"],
   "scripts": {
     "dev:web": "pnpm --filter @unogo/web-gateway dev",
-    "dev:orch": "tsx services/orchestrator/src/index.ts",
-    "dev:llm": "tsx services/llm-bridge/src/index.ts",
-    "dev:notif": "tsx services/notifications/src/index.ts",
-    "dev": "run-p dev:web dev:orch dev:llm dev:notif",
+    "dev:orch": "pnpm --filter ./services/orchestrator exec tsx src/index.ts",
+    "dev:llm": "pnpm --filter ./services/llm-bridge exec tsx src/index.ts",
+    "dev:notif": "pnpm --filter ./services/notifications exec tsx src/index.ts",
+    "dev:workers": "run-p dev:orch dev:llm dev:notif",
+    "dev": "run-p dev:web dev:workers",
     "typecheck": "tsc -p tsconfig.base.json --noEmit",
     "vercel-build": "pnpm --filter @unogo/web-gateway build",
     "build": "echo root-noop"
