@@ -19,6 +19,8 @@
       "@unogo/llm-claude": ["packages/llm-claude/src/index.ts"],
       "@unogo/llm-gemini": ["packages/llm-gemini/src/index.ts"],
       "@unogo/llm-openai": ["packages/llm-openai/src/index.ts"],
+      "@unogo/embeddings-openai": ["packages/embeddings-openai/src/index.ts"],
+      "@unogo/topics": ["packages/topics/src/index.ts"],
       "@unogo/prompts": ["packages/prompts/src/index.ts"],
       "@unogo/shared": ["packages/shared/src/index.ts"]
     }
