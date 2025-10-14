@@ -11,8 +11,9 @@ export interface LLMProvider {
   name: 'openai'|'gemini'|'claude'|'local';
   supports: LLMModelHint[];
   chat(input: {
-    system: string;
-    user: string;
+    system?: string;
+    user?: string;
+    messages?: Array<{ role: 'system'|'user'|'assistant'; content: string }>;
     tools?: any[];
     maxTokens?: number;
     temperature?: number;
