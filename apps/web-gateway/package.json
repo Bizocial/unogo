@@ -15,10 +15,13 @@
     "ioredis": "^5.4.1",
     "bullmq": "^5.7.0",
     "pino": "^9.0.0",
-    "@unogo/events": "0.1.0",
-    "@unogo/channels-whatsapp": "0.1.0"
+    "@unogo/events": "workspace:*",
+    "@unogo/channels-whatsapp": "workspace:*",
+    "@unogo/topics": "workspace:*",
+    "@unogo/shared": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5"
+    "typescript": "^5",
+    "@tailwindcss/postcss": "^4.0.0"
   }
 }
