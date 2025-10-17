@@ -1,1 +1,13 @@
-{ "name": "@unogo/channels-whatsapp", "version": "0.1.0", "type": "module", "main": "src/index.ts", "exports": { ".": "./src/index.ts" }, "dependencies": { "@unogo/channels": "workspace:*" } }
+{
+  "name": "@unogo/channels-whatsapp",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@unogo/shared": "workspace:*",
+    "@unogo/channels": "workspace:*"
+  }
+}

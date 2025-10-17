@@ -1,1 +1,17 @@
-{ "name": "@unogo/sv-notifications", "version": "0.1.0", "type": "module", "main": "src/index.ts", "dependencies": { "@unogo/events":"0.1.0", "@unogo/channels":"0.1.0", "@unogo/channels-whatsapp":"0.1.0" } }
+{
+  "name": "@unogo/sv-notifications",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+  "start": "NODE_OPTIONS=--preserve-symlinks tsx src/index.ts"
+},
+  "dependencies": {
+  "@unogo/events": "workspace:*",
+  "@unogo/channels": "workspace:*",
+  "@unogo/channels-whatsapp": "workspace:*",
+  "@unogo/shared": "workspace:*"
+}
+}
+
+

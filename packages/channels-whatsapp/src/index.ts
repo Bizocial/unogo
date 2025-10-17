@@ -70,8 +70,35 @@ export const WhatsAppInbound: ChannelInboundAdapter & {
 
 export const WhatsAppOutbound: ChannelOutboundAdapter = {
   async sendText(to: string, text: string) {
-    // TODO: Replace with 360dialog/Twilio BA API call
-    console.log('[WA] sendText ->', to, text);
+    const token = process.env.META_WHATSAPP_TOKEN;
+    const phoneId = process.env.META_PHONE_NUMBER_ID;
+    if (!token || !phoneId) {
+      logger.warn({ to }, 'WhatsApp token or phone id missing');
+      return;
+    }
+
+    const url = `https://graph.facebook.com/v19.0/${phoneId}/messages`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        to,
+        type: 'text',
+        text: { body: text }
+      })
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      logger.error({ to, status: res.status, body }, 'WhatsApp send failed');
+      throw new Error(`WhatsApp API ${res.status}`);
+    }
+
+    logger.info({ to }, 'WhatsApp message sent');
   },
   async markRead(_providerMsgId: string) {
     // optional no-op
