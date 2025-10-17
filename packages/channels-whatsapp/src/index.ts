@@ -39,6 +39,10 @@ export const WhatsAppInbound: ChannelInboundAdapter & {
     const body = JSON.parse(raw);
     const change = body?.entry?.[0]?.changes?.[0]?.value;
     const msg = change?.messages?.[0];
+    if (!msg) {
+      logger.warn({ provider: 'whatsapp', body }, 'WA inbound missing messages payload');
+      throw new Error('whatsapp:missing-message');
+    }
     const metadata = change?.metadata || {};
 
     const id = msg?.id ?? crypto.randomUUID();
@@ -52,6 +56,7 @@ export const WhatsAppInbound: ChannelInboundAdapter & {
     const to = addPlus(digitsOnly(toRaw));
     if (!from || !to) {
       logger.warn({ provider: 'whatsapp', raw_from: fromRaw, raw_to: toRaw }, 'WA inbound missing from/to');
+      throw new Error('whatsapp:missing-participants');
     }
     const type = msg?.type ?? 'text';
     const text = type === 'text' ? (msg?.text?.body ?? '') : undefined;
