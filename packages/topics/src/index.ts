@@ -5,8 +5,9 @@ const redis = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379');
 
 const HSIZE = Number(process.env.TOPIC_HIST_SIZE || 8);
 const SUM_EVERY = Number(process.env.TOPIC_SUM_EVERY || 10);
-const SIM_NEW = Number(process.env.TOPIC_SIM_NEW || 0.78);
-const SIM_STICKY = Number(process.env.TOPIC_SIM_STICKY || 0.7);
+const SIM_NEW = Number(process.env.TOPIC_SIM_NEW || 0.55);
+const SIM_STICKY = Number(process.env.TOPIC_SIM_STICKY || 0.4);
+const STICKY_WINDOW_MS = Number(process.env.TOPIC_STICKY_WINDOW_MS || 5 * 60_000);
 
 function kTopicsKey(convId: string) { return `conv:${convId}:topics`; }
 function kTopicMeta(convId: string, tid: string) { return `conv:${convId}:topic:${tid}`; }
@@ -124,12 +125,25 @@ export async function detectOrCreateTopic(convId: string, userText: string) {
     return { topicId: id0, created: true as const };
   }
 
+  const nowTs = Date.now();
+  const active = await getActive(convId);
+  let activeMeta: Record<string, string> | null = null;
+  if (active) {
+    const meta = await redis.hgetall(kTopicMeta(convId, active));
+    if (meta && Object.keys(meta).length > 0) {
+      activeMeta = meta;
+      const updatedAt = Number(meta.updatedAt || 0);
+      if (STICKY_WINDOW_MS > 0 && updatedAt && nowTs - updatedAt <= STICKY_WINDOW_MS) {
+        return { topicId: active, created: false as const };
+      }
+    }
+  }
+
   const { bestId, best } = await topicSimilarity(convId, vec);
 
   // sticky threshold: if active topic is close enough, keep it
-  const active = await getActive(convId);
-  if (active) {
-    const acMeta = await redis.hget(kTopicMeta(convId, active), 'centroid');
+  if (active && activeMeta) {
+    const acMeta = activeMeta.centroid;
     if (acMeta) {
       try {
         const ac = JSON.parse(acMeta) as number[];
@@ -148,10 +162,10 @@ export async function detectOrCreateTopic(convId: string, userText: string) {
   }
 
   // otherwise attach to the most similar and update centroid
-  const meta = await redis.hget(kTopicMeta(convId, bestId), 'centroid');
-  if (meta) {
+  const centroid = await redis.hget(kTopicMeta(convId, bestId), 'centroid');
+  if (centroid) {
     try {
-      const c = JSON.parse(meta) as number[];
+      const c = JSON.parse(centroid) as number[];
       const next = avg(c, vec);
       await redis.hset(kTopicMeta(convId, bestId), 'centroid', JSON.stringify(next));
     } catch {}
