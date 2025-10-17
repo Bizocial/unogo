@@ -16,12 +16,19 @@ function l2(v: number[]): number[] {
 export async function embed(text: string): Promise<Embedding> {
   try {
     const input = (text || '').slice(0, 4000);
+    const start = Date.now();
     const r = await client.embeddings.create({ model: MODEL, input });
+    const duration = Date.now() - start;
     const v = (r.data?.[0]?.embedding as unknown as number[]) || [];
-    if (!Array.isArray(v) || v.length === 0) return null;
+    if (!Array.isArray(v) || v.length === 0) {
+      console.warn({ provider: 'openai', model: MODEL, duration_ms: duration }, 'embed:empty-vector');
+      return null;
+    }
+    console.info({ provider: 'openai', model: MODEL, duration_ms: duration }, 'embed:vector-ready');
     const useL2 = (process.env.EMBED_NORM_L2 || '1') !== '0';
     return useL2 ? l2(v) : v;
-  } catch {
+  } catch (err: any) {
+    console.error({ provider: 'openai', model: MODEL, err: err?.message ?? err }, 'embed:failed');
     return null;
   }
 }
