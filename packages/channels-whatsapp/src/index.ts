@@ -40,6 +40,11 @@ export const WhatsAppInbound: ChannelInboundAdapter & {
     const change = body?.entry?.[0]?.changes?.[0]?.value;
     const msg = change?.messages?.[0];
     if (!msg) {
+      const statuses = Array.isArray(change?.statuses) ? change?.statuses : [];
+      if (statuses.length > 0) {
+        logger.info({ provider: 'whatsapp', statuses: statuses.map((s: any) => ({ id: s.id, status: s.status })) }, 'WA inbound status update ignored');
+        throw new Error('whatsapp:status-event');
+      }
       logger.warn({ provider: 'whatsapp', body }, 'WA inbound missing messages payload');
       throw new Error('whatsapp:missing-message');
     }
