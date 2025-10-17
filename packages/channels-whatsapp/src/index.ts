@@ -44,12 +44,15 @@ export const WhatsAppInbound: ChannelInboundAdapter & {
     const id = msg?.id ?? crypto.randomUUID();
     const contact = change?.contacts?.[0];
     const fromRaw = msg?.from ?? contact?.wa_id ?? '';
-    const toRaw = metadata.phone_number_id ?? metadata.display_phone_number ?? process.env.WHATSAPP_PHONE_ID ?? '';
+    const toRaw = metadata.phone_number_id ?? metadata.display_phone_number ?? process.env.META_PHONE_NUMBER_ID ?? process.env.WHATSAPP_PHONE_ID ?? '';
 
     const digitsOnly = (s: string) => String(s || '').replace(/\D+/g, '');
     const addPlus = (s: string) => (s ? ('+' + s) : s);
     const from = addPlus(digitsOnly(fromRaw));
     const to = addPlus(digitsOnly(toRaw));
+    if (!from || !to) {
+      logger.warn({ provider: 'whatsapp', raw_from: fromRaw, raw_to: toRaw }, 'WA inbound missing from/to');
+    }
     const type = msg?.type ?? 'text';
     const text = type === 'text' ? (msg?.text?.body ?? '') : undefined;
 
