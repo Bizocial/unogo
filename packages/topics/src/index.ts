@@ -112,6 +112,7 @@ export async function detectOrCreateTopic(convId: string, userText: string) {
 
   // If embedding failed, avoid fragmenting topics.
   if (!vec || vec.length === 0) {
+    console.info({ convId }, 'topics: embedding missing, using active/existing');
     const active = await getActive(convId);
     if (active) return { topicId: active, created: false as const };
     const existing: string[] = await redis.zrevrange(kTopicsKey(convId), 0, 0);
@@ -134,12 +135,14 @@ export async function detectOrCreateTopic(convId: string, userText: string) {
       activeMeta = meta;
       const updatedAt = Number(meta.updatedAt || 0);
       if (STICKY_WINDOW_MS > 0 && updatedAt && nowTs - updatedAt <= STICKY_WINDOW_MS) {
+        console.info({ convId, topicId: active }, 'topics: sticky window reuse active');
         return { topicId: active, created: false as const };
       }
     }
   }
 
   const { bestId, best } = await topicSimilarity(convId, vec);
+  console.info({ convId, active, bestId, best }, 'topics: similarity result');
 
   // sticky threshold: if active topic is close enough, keep it
   if (active && activeMeta) {
@@ -148,7 +151,10 @@ export async function detectOrCreateTopic(convId: string, userText: string) {
       try {
         const ac = JSON.parse(acMeta) as number[];
         const s = cosine(vec, ac);
-        if (s >= SIM_STICKY) return { topicId: active, created: false as const };
+        if (s >= SIM_STICKY) {
+          console.info({ convId, topicId: active, score: s }, 'topics: sticky similarity reuse active');
+          return { topicId: active, created: false as const };
+        }
       } catch {}
     }
   }
@@ -158,6 +164,7 @@ export async function detectOrCreateTopic(convId: string, userText: string) {
     const title = (userText || '').slice(0, 40).trim() || 'Nuevo tema';
     const id = await upsertTopic(convId, title, vec);
     await setActive(convId, id);
+    console.info({ convId, topicId: id, score: best ?? null }, 'topics: created new topic');
     return { topicId: id, created: true as const };
   }
 
@@ -171,5 +178,6 @@ export async function detectOrCreateTopic(convId: string, userText: string) {
     } catch {}
   }
   await setActive(convId, bestId);
+  console.info({ convId, topicId: bestId, score: best }, 'topics: reusing similar topic');
   return { topicId: bestId, created: false as const };
 }
