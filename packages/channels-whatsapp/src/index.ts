@@ -37,11 +37,14 @@ export const WhatsAppInbound: ChannelInboundAdapter & {
   async parseInbound(rawOrReq: string | Request) {
     const raw = typeof rawOrReq === 'string' ? rawOrReq : await rawOrReq.text();
     const body = JSON.parse(raw);
-    const msg = body?.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+    const change = body?.entry?.[0]?.changes?.[0]?.value;
+    const msg = change?.messages?.[0];
+    const metadata = change?.metadata || {};
 
     const id = msg?.id ?? crypto.randomUUID();
-    const fromRaw = msg?.from ?? '';
-    const toRaw = process.env.WHATSAPP_PHONE_ID ?? '';
+    const contact = change?.contacts?.[0];
+    const fromRaw = msg?.from ?? contact?.wa_id ?? '';
+    const toRaw = metadata.phone_number_id ?? metadata.display_phone_number ?? process.env.WHATSAPP_PHONE_ID ?? '';
 
     const digitsOnly = (s: string) => String(s || '').replace(/\D+/g, '');
     const addPlus = (s: string) => (s ? ('+' + s) : s);
